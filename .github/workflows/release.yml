@@ -1,0 +1,41 @@
+name: Release GitHub Action
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  release:
+    name: Release versioned GitHub Action
+    if: github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: Force create tag
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        git remote set-url origin "https://${GITHUB_ACTOR}:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+        git tag -f $(cat version)
+        git push -f --tags
+    - name: Delete release if exists
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        latest=$(curl https://api.github.com/repos/${GITHUB_REPOSITORY}/releases/latest)
+        tag=$(echo $latest | jq .tag_name | xargs) # xargs strips quotes
+        if grep -q "$tag" version; then
+          release_id=$(echo $latest | jq .id)
+          curl -X DELETE https://${GITHUB_ACTOR}:${GITHUB_TOKEN}@api.github.com/repos/${GITHUB_REPOSITORY}/releases/${release_id}
+        fi
+    - name: Create Release
+      id: create_release
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        release=$(curl -X POST \
+          -d '{"tag_name": "'"$(cat version)"'"}' \
+          -H "Content-Type: application/json" \
+          https://${GITHUB_ACTOR}:${GITHUB_TOKEN}@api.github.com/repos/${GITHUB_REPOSITORY}/releases)
+        echo ::set-output name=release_id::$(echo $release | jq .id)

@@ -1,0 +1,22 @@
+name: 'YAML Validator'
+description: 'Validate YAML document against a given schema'
+author: 'navikt'
+
+inputs:
+  schema_path:
+    description: 'Path to the YAML schema to validate against'
+    required: true
+  document_path:
+    description: 'Path to the YAML document to be validated'
+    required: true
+
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
+  args:
+    - ${{ inputs.schema_path }}
+    - ${{ inputs.document_path }}
+
+branding:
+  color: purple
+  icon: check-circle
