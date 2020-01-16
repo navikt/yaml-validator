@@ -2,7 +2,7 @@
 Basic Python script and accompanying GitHub action for validating a given YAML document against a given schema using [Cerberus](http://docs.python-cerberus.org/en/stable/).
 
 ## Usage
-```shell script
+```text
 usage: validator.py [-h] schema_path document_path
 
 YAML validator
@@ -13,6 +13,34 @@ positional arguments:
 
 optional arguments:
   -h, --help     show this help message and exit
+```
+
+### Examples
+
+#### Valid schema
+```yaml
+Users:
+  required: true
+  type: list
+  schema:
+    type: dict
+    schema:
+      name:
+        required: true
+        type: string
+      age:
+        required: true
+        type: integer
+```
+
+#### Valid document that validates against schema
+
+```yaml
+Users:
+  - name: "Joe"
+    age: 21
+  - name: "Jane"
+    age: 24
 ```
 
 ## Github Action
