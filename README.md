@@ -9,7 +9,7 @@ YAML validator
 
 positional arguments:
   schema_path    Path to the YAML schema to validate against
-  document_path  Path to the YAML document to be validated
+  document_path  Path to the YAML document or directory of documents to be validated
 
 optional arguments:
   -h, --help     show this help message and exit
@@ -48,7 +48,7 @@ Users:
 ### Required parameters
 
 - `schema_path` - Path to the YAML schema to validate against
-- `document_path` - Path to the YAML document to be validated
+- `document_path` - Path to the YAML document or directory of documents to be validated
 
 ### Workflow example
 ```yaml
