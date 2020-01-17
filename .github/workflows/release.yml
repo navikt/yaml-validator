@@ -5,10 +5,35 @@ on:
     branches:
       - master
 
+env:
+  image: docker.pkg.github.com/${{ github.repository }}/yaml-validator
+
 jobs:
+  build:
+    name: Build Docker container
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: Generate version tags
+        run: |
+          echo ::set-env name=version::$(cat version)
+      - name: Build Docker image
+        run: |
+          docker build --tag ${image}:${GITHUB_SHA} --tag ${image}:latest --tag ${image}:${version} .
+      - name: Push Docker image to GitHub
+        if: github.ref == 'refs/heads/master'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          docker login docker.pkg.github.com -u ${GITHUB_REPOSITORY} -p ${GITHUB_TOKEN}
+          docker push ${image}:${GITHUB_SHA}
+          docker push ${image}:${version}
+          docker push ${image}:latest
+
   release:
     name: Release versioned GitHub Action
     if: github.ref == 'refs/heads/master'
+    needs: build
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
