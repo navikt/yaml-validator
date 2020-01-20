@@ -5,7 +5,13 @@ import pprint
 import sys
 import yaml
 
+try:
+    from yaml import CFullLoader as Loader
+except ImportError:
+    from yaml import FullLoader as Loader
+
 from cerberus import Validator
+
 
 # TODO
 class CustomValidator(Validator):
@@ -29,7 +35,7 @@ class CustomValidator(Validator):
 def __load_yaml_document(path):
     with open(path, 'r') as stream:
         try:
-            return yaml.load(stream, Loader=yaml.FullLoader)
+            return yaml.load(stream, Loader=Loader)
         except yaml.YAMLError as exception:
             raise exception
 
