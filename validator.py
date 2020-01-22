@@ -13,23 +13,32 @@ except ImportError:
 from cerberus import Validator
 
 
-# TODO
+# Custom rules for vault-iac validations
 class CustomValidator(Validator):
+    def __init__(self, *args, **kwargs):
+        self.path_to_document = kwargs.get('path_to_document')
+        super(CustomValidator, self).__init__(*args, **kwargs)
+
     def _validate_app_must_exist(self, app_must_exist, field, value):
         """ Test that the application defined for the team exists in the apps directory
         The rule's arguments are validated against this schema:
         {'type': 'boolean'}
         """
-        pass
+        cluster = self.document_path[-1]
+        file_path = pathlib.Path(self.path_to_document).parent.parent.joinpath(f"apps/{cluster}/{value}.yml")
+        if app_must_exist and not file_path.exists():
+            self._error(field, f"app '{value}' was not found at '{file_path}'")
 
     def _validate_app_name_must_match_filename(self, app_name_must_match_filename, field, value):
         """ Test that the application name matches the given filename.
         The rule's arguments are validated against this schema:
         {'type': 'boolean'}
         """
-        matches = True
+        filename = pathlib.Path(self.path_to_document).stem
+        matches = filename == value
         if app_name_must_match_filename and not matches:
-            self._error(field, "must match the given filename")
+            self._error(field, f"value '{value}' must match the given "
+                               f"filename '{filename}' (found in {self.path_to_document})")
 
 
 def __load_yaml_document(path):
@@ -41,7 +50,7 @@ def __load_yaml_document(path):
 
 
 def evaluate_yaml_schema(schema_path, document_path):
-    validator = CustomValidator()
+    validator = CustomValidator(path_to_document=document_path)
     schema = __load_yaml_document(schema_path)
     document = __load_yaml_document(document_path)
     valid = validator.validate(document, schema)
