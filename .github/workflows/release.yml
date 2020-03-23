@@ -7,6 +7,7 @@ on:
 
 env:
   image: docker.pkg.github.com/${{ github.repository }}/yaml-validator
+  dockerhub_image: navikt/yaml-validator
 
 jobs:
   build:
@@ -29,6 +30,15 @@ jobs:
           docker push ${image}:${GITHUB_SHA}
           docker push ${image}:${version}
           docker push ${image}:latest
+      - name: Push Docker image to Dockerhub
+        if: github.ref == 'refs/heads/master'
+        env:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
+        run: |
+          docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
+          docker tag ${image}:latest ${dockerhub_image}:${version}
+          docker push ${dockerhub_image}:${version}
 
   release:
     name: Release versioned GitHub Action
