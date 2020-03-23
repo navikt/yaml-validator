@@ -1,7 +1,6 @@
 import argparse
 import logging
 import pathlib
-import pprint
 import sys
 import yaml
 
@@ -27,7 +26,7 @@ class CustomValidator(Validator):
         cluster = self.document_path[-1]
         file_path = pathlib.Path(self.path_to_document).parent.parent.joinpath(f"apps/{cluster}/{value}.yml")
         if app_must_exist and not file_path.exists():
-            self._error(field, f"app '{value}' was not found at '{file_path}'")
+            self._error(field, f"\"{value}\" does not exist at \"{file_path}\"")
 
     def _validate_app_name_must_match_filename(self, app_name_must_match_filename, field, value):
         """ Test that the application name matches the given filename.
@@ -37,8 +36,7 @@ class CustomValidator(Validator):
         filename = pathlib.Path(self.path_to_document).stem
         matches = filename == value
         if app_name_must_match_filename and not matches:
-            self._error(field, f"value '{value}' must match the given "
-                               f"filename '{filename}' (found in {self.path_to_document})")
+            self._error(field, f"\"{value}\" does not match the filename \"{filename}\" at \"{self.path_to_document}\"")
 
 
 def __load_yaml_document(path):
@@ -55,10 +53,8 @@ def evaluate_yaml_schema(schema_path, document_path):
     document = __load_yaml_document(document_path)
     valid = validator.validate(document, schema)
     if not valid:
-        logging.error(f"❌\tFailed to validate document '{document_path}' against schema `{schema_path}`")
-        pp = pprint.PrettyPrinter(width=200)
-        logging.error(pp.pformat(validator.errors))
-        print('')
+        logging.error(f"❌\t'{document_path}'")
+        logging.error(f"\n{yaml.dump(validator.errors, default_flow_style=False)}")
     return valid
 
 
@@ -66,7 +62,7 @@ def validate_yaml_for_dir(schema_path, document_dir_path):
     results = [(document_path.relative_to('./'), evaluate_yaml_schema(schema_path, document_path.relative_to('./')))
                for document_path in pathlib.Path(document_dir_path).glob('**/*.yml')]
     if any(not is_valid for (_, is_valid) in results):
-        logging.error(f"❌\tFound validation failures for the following document(s) in '{document_dir_path}':")
+        logging.error(f"The following document(s) in '{document_dir_path}' failed to validate:")
         for (path, is_valid) in results:
             if not is_valid:
                 logging.error(f'❌\t{path}')
@@ -90,6 +86,8 @@ def main():
     args = parser.parse_args()
     schema_path = args.schema_path
     document_path = args.document_path
+
+    logging.info(f"😘\tValidating '{document_path}' against schema '{schema_path}'...")
 
     if pathlib.Path(document_path).is_dir():
         validate_yaml_for_dir(schema_path, document_path)
