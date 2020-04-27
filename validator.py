@@ -64,13 +64,16 @@ def validate_yaml_for_dir(schema_path, document_dir_path):
         for file_ext in ('*.yml', '*.yaml')
         for document_path in pathlib.Path(document_dir_path).glob('**/' + file_ext)
     ]
+    valid_count = len([(path, is_valid) for (path, is_valid) in results if is_valid])
+    invalid_count = len([(path, is_valid) for (path, is_valid) in results if not is_valid])
+    total_count = len(results)
 
     if any(not is_valid for (_, is_valid) in results):
-        logging.error(f"The following document(s) in '{document_dir_path}' failed to validate:")
+        logging.error(f"{invalid_count} of {total_count} document(s) in '{document_dir_path}' failed to validate:")
         [logging.error(f'❌\t{path}') for (path, is_valid) in results if not is_valid]
         sys.exit(1)
     else:
-        logging.info(f"✅\tAll documents in '{document_dir_path}' are valid!")
+        logging.info(f"✅\t{valid_count+invalid_count} of {total_count} documents in '{document_dir_path}' are valid!")
 
 
 def validate_single_yaml(schema_path, document_path):
