@@ -59,16 +59,15 @@ def evaluate_yaml_schema(schema_path, document_path):
 
 
 def validate_yaml_for_dir(schema_path, document_dir_path):
-    list_of_lists = [[
+    results = [
         (document_path.relative_to('./'), evaluate_yaml_schema(schema_path, document_path.relative_to('./')))
+        for file_ext in ('*.yml', '*.yaml')
         for document_path in pathlib.Path(document_dir_path).glob('**/' + file_ext)
-    ] for file_ext in ('*.yml', '*.yaml')]
-    results = [val for sublist in list_of_lists for val in sublist]
+    ]
+
     if any(not is_valid for (_, is_valid) in results):
         logging.error(f"The following document(s) in '{document_dir_path}' failed to validate:")
-        for (path, is_valid) in results:
-            if not is_valid:
-                logging.error(f'❌\t{path}')
+        [logging.error(f'❌\t{path}') for (path, is_valid) in results if not is_valid]
         sys.exit(1)
     else:
         logging.info(f"✅\tAll documents in '{document_dir_path}' are valid!")
