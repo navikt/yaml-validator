@@ -8,8 +8,8 @@ usage: validator.py [-h] schema_path document_path
 YAML validator
 
 positional arguments:
-  schema_path    Path to the YAML schema to validate against
-  document_path  Path to the YAML document or directory of documents to be validated
+  schema_path    Path to the YAML schema to validate against.
+  document_path  Path to the YAML document or directory of documents to be validated. Accepts globs. Defaults to recursive search if only a directory is provided.
 
 optional arguments:
   -h, --help     show this help message and exit
@@ -48,7 +48,7 @@ Users:
 ### Required parameters
 
 - `schema_path` - Path to the YAML schema to validate against
-- `document_path` - Path to the YAML document or directory of documents to be validated
+- `document_path` - Path to the YAML document or directory of documents to be validated. Accepts globs.
 
 ### Workflow example
 ```yaml
@@ -58,8 +58,8 @@ jobs:
   validate:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v1
-    - uses: navikt/yaml-validator@v1
+    - uses: actions/checkout@v2
+    - uses: navikt/yaml-validator@v2
       with:
         schema_path: schema.yaml
         document_path: document.yaml
