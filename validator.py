@@ -12,20 +12,19 @@ from cerberus import Validator
 from pathlib import Path
 
 
-# Custom rules for vault-iac validations
 class CustomValidator(Validator):
     def __init__(self, *args, **kwargs):
         self.path_to_document = kwargs.get('path_to_document')
         super(CustomValidator, self).__init__(*args, **kwargs)
 
-    def _validate_app_name_must_match_filename(self, app_name_must_match_filename, field, value):
-        """ Test that the application name matches the given filename.
+    def _validate_value_must_match_filename(self, value_must_match_filename, field, value):
+        """ Test that the value of the field matches the given filename.
         The rule's arguments are validated against this schema:
         {'type': 'boolean'}
         """
         filename = Path(self.path_to_document).stem
         matches = filename == value
-        if app_name_must_match_filename and not matches:
+        if value_must_match_filename and not matches:
             self._error(field, f"\"{value}\" does not match the filename \"{filename}\" at \"{self.path_to_document}\"")
 
 
