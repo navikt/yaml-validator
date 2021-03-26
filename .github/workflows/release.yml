@@ -17,7 +17,8 @@ jobs:
       - uses: actions/checkout@v1
       - name: Generate version tags
         run: |
-          echo ::set-env name=version::$(cat version)
+          version=$(cat version)
+          echo "version=${version}" >> $GITHUB_ENV
       - name: Build Docker image
         run: |
           docker build --tag ${image}:${GITHUB_SHA} --tag ${image}:latest --tag ${image}:${version} .
