@@ -39,7 +39,7 @@ def _load_yaml_document(path):
 
 def _validate_single(schema_path, document_path, validate_file_extension):
     if document_path.suffix not in [".yml", ".yaml"]:
-        if validate_file_extension:
+        if validate_file_extension and not document_path.is_dir():
             logging.error(f"❌\t'{document_path}' does not have a file extension matching [.yml, .yaml].")
             return False
         return None
