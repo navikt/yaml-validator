@@ -9,6 +9,10 @@ inputs:
   document_path:
     description: 'Path to the YAML document to be validated'
     required: true
+  validate_file_extension:
+    description: 'Validate that all the given documents have a valid YAML file extension'
+    required: false
+    default: 'no'
 
 runs:
   using: 'docker'
@@ -16,6 +20,7 @@ runs:
   args:
     - ${{ inputs.schema_path }}
     - ${{ inputs.document_path }}
+    - ${{ inputs.validate_file_extension }}
 
 branding:
   color: purple

@@ -9,6 +9,7 @@ except ImportError:
     from yaml import FullLoader as Loader
 
 from cerberus import Validator
+from distutils.util import strtobool
 from pathlib import Path
 
 
@@ -36,7 +37,13 @@ def _load_yaml_document(path):
             raise exception
 
 
-def _validate_single(schema_path, document_path):
+def _validate_single(schema_path, document_path, validate_file_extension):
+    if document_path.suffix not in [".yml", ".yaml"]:
+        if validate_file_extension:
+            logging.error(f"❌\t'{document_path}' does not have a file extension matching [.yml, .yaml].")
+            return False
+        return None
+
     validator = CustomValidator(path_to_document=document_path)
     schema = _load_yaml_document(schema_path)
     document = _load_yaml_document(document_path)
@@ -48,11 +55,13 @@ def _validate_single(schema_path, document_path):
     return valid
 
 
-def _validate_path(root, schema_path, document_paths):
+def _validate_path(root, schema_path, document_paths, validate_file_extension):
     results = [
-        (path.relative_to('./'), _validate_single(schema_path, path.relative_to('./')))
-        for path in document_paths if path.suffix in [".yml", ".yaml"]
+        (path.relative_to('./'), _validate_single(schema_path, path.relative_to('./'), validate_file_extension))
+        for path in document_paths
     ]
+    results = list(filter(lambda x: x[1] is not None, results))
+
     total_count = len(results)
 
     if any(not is_valid for (_, is_valid) in results):
@@ -64,7 +73,7 @@ def _validate_path(root, schema_path, document_paths):
         logging.info(f"✅\t{total_count} of {total_count} documents in '{root}' are valid!")
 
 
-def _process(schema_path, document_path):
+def _process(schema_path, document_path, validate_file_extension):
     logging.info(f"😘\tValidating '{document_path}' against schema '{schema_path}'...")
 
     root = Path(document_path).relative_to('./')
@@ -75,7 +84,7 @@ def _process(schema_path, document_path):
             document_path = document_path + '/'
         paths = Path('.').glob(document_path + '**/*')
 
-    _validate_path(root, schema_path, paths)
+    _validate_path(root, schema_path, paths, validate_file_extension)
 
 
 def main():
@@ -85,11 +94,15 @@ def main():
     parser.add_argument("document_path", help="Path to the YAML document or directory of documents to be validated. "
                                               "Accepts globs. Defaults to recursive search if only a directory is "
                                               "provided.")
+    parser.add_argument("validate_file_extension",
+                        default="false",
+                        help="Validate that all the given documents have a valid YAML file extension")
     args = parser.parse_args()
     schema_path = args.schema_path
     document_path = args.document_path
+    validate_file_extension = bool(strtobool(args.validate_file_extension.lower()))
 
-    _process(schema_path, document_path)
+    _process(schema_path, document_path, validate_file_extension)
 
 
 if __name__ == "__main__":

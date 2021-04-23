@@ -3,16 +3,18 @@ Basic Python script and accompanying GitHub action for validating a given YAML d
 
 ## Usage
 ```text
-usage: validator.py [-h] schema_path document_path
+usage: validator.py [-h] schema_path document_path validate_file_extension
 
 YAML validator
 
 positional arguments:
-  schema_path    Path to the YAML schema to validate against.
-  document_path  Path to the YAML document or directory of documents to be validated. Accepts globs. Defaults to recursive search if only a directory is provided.
+  schema_path           Path to the YAML schema to validate against
+  document_path         Path to the YAML document or directory of documents to be validated. Accepts globs. Defaults to recursive search if only a directory is provided.
+  validate_file_extension
+                        Validate that all the given documents have a valid YAML file extension
 
 optional arguments:
-  -h, --help     show this help message and exit
+  -h, --help            show this help message and exit
 ```
 
 ### Examples
@@ -50,6 +52,10 @@ Users:
 - `schema_path` - Path to the YAML schema to validate against
 - `document_path` - Path to the YAML document or directory of documents to be validated. Accepts globs.
 
+### Optional parameters
+
+- `validate_file_extension` - Validate that all the given documents have a valid YAML file extension. Defaults to `no`.
+
 ### Workflow example
 ```yaml
 name: Validate YAML
@@ -63,4 +69,5 @@ jobs:
       with:
         schema_path: schema.yaml
         document_path: document.yaml
+        validate_file_extension: 'no' # enum of ['yes', 'no']
 ```
