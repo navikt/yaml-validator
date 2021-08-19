@@ -12,6 +12,8 @@ from cerberus import Validator
 from distutils.util import strtobool
 from pathlib import Path
 
+seen_fields = {}
+
 
 class CustomValidator(Validator):
     def __init__(self, *args, **kwargs):
@@ -27,6 +29,24 @@ class CustomValidator(Validator):
         matches = filename == value
         if value_must_match_filename and not matches:
             self._error(field, f"\"{value}\" does not match the filename \"{filename}\" at \"{self.path_to_document}\"")
+
+    def _validate_value_must_be_unique(self, value_must_be_unique, field, value):
+        """ Test that the value of the field has not been seen before.
+        The rule's arguments are validated against this schema:
+        {'type': 'boolean'}
+        """
+        if not value_must_be_unique:
+            return
+
+        if field not in seen_fields:
+            seen_fields[field] = {value: self.path_to_document}
+            return
+
+        if value in seen_fields[field]:
+            seen_path = seen_fields[field][value]
+            self._error(field, f"Duplicate value \"{value}\" found at \"{self.path_to_document}\"; conflicts with \"{seen_path}\".")
+        else:
+            seen_fields[field][value] = self.path_to_document
 
 
 def _load_yaml_document(path):
