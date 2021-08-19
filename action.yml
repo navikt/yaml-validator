@@ -16,7 +16,7 @@ inputs:
 
 runs:
   using: 'docker'
-  image: 'docker://navikt/yaml-validator:v2.1'
+  image: 'docker://navikt/yaml-validator:v3'
   args:
     - ${{ inputs.schema_path }}
     - ${{ inputs.document_path }}
