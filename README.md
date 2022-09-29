@@ -65,10 +65,11 @@ jobs:
   validate:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
-    - uses: navikt/yaml-validator@v3
+    - uses: actions/checkout@v4
+    - uses: navikt/yaml-validator@v4
       with:
         schema_path: schema.yaml
         document_path: document.yaml
-        validate_file_extension: 'no' # enum of ['yes', 'no']
+        validate_file_extension: 'no' # optional, defaults shown, enum of ['yes', 'no']
+        filter_extensions: '.yml,.yaml' # optional, defaults shown
 ```
