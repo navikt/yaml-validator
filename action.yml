@@ -10,17 +10,22 @@ inputs:
     description: 'Path to the YAML document to be validated'
     required: true
   validate_file_extension:
-    description: 'Validate that all the given documents have a valid YAML file extension'
+    description: 'Validate that all the given documents have a file extension as specified by filter_extensions. Default: false'
     required: false
     default: 'no'
+  filter_extensions:
+    description: 'Only the files with these extensions will be checked. Default: .yml,.yaml'
+    required: false
+    default: '.yml,.yaml'
 
 runs:
   using: 'docker'
-  image: 'docker://navikt/yaml-validator:v3'
+  image: 'docker://navikt/yaml-validator:v4'
   args:
     - ${{ inputs.schema_path }}
     - ${{ inputs.document_path }}
     - ${{ inputs.validate_file_extension }}
+    - ${{ inputs.filter_extensions }}
 
 branding:
   color: purple

@@ -3,7 +3,7 @@ Basic Python script and accompanying GitHub action for validating a given YAML d
 
 ## Usage
 ```text
-usage: validator.py [-h] schema_path document_path validate_file_extension
+usage: validator.py [-h] schema_path document_path [validate_file_extension] [filter_extensions]
 
 YAML validator
 
@@ -11,7 +11,8 @@ positional arguments:
   schema_path           Path to the YAML schema to validate against
   document_path         Path to the YAML document or directory of documents to be validated. Accepts globs. Defaults to recursive search if only a directory is provided.
   validate_file_extension
-                        Validate that all the given documents have a valid YAML file extension
+                        Validate that all the given documents have a file extension as specified by filter_extensions. Default: false
+  filter_extensions     Only the files with these extensions will be checked. Default: .yml,.yaml
 
 optional arguments:
   -h, --help            show this help message and exit

@@ -57,8 +57,8 @@ def _load_yaml_document(path):
             raise exception
 
 
-def _validate_single(schema_path, document_path, validate_file_extension):
-    if document_path.suffix not in [".yml", ".yaml"]:
+def _validate_single(schema_path, document_path, validate_file_extension, filter_extensions):
+    if document_path.suffix not in filter_extensions :
         if validate_file_extension and not document_path.is_dir():
             logging.error(f"❌\t'{document_path}' does not have a file extension matching [.yml, .yaml].")
             return False
@@ -75,9 +75,9 @@ def _validate_single(schema_path, document_path, validate_file_extension):
     return valid
 
 
-def _validate_path(root, schema_path, document_paths, validate_file_extension):
+def _validate_path(root, schema_path, document_paths, validate_file_extension, filter_extensions):
     results = [
-        (path.relative_to('./'), _validate_single(schema_path, path.relative_to('./'), validate_file_extension))
+        (path.relative_to('./'), _validate_single(schema_path, path.relative_to('./'), validate_file_extension, filter_extensions))
         for path in document_paths
     ]
     results = list(filter(lambda x: x[1] is not None, results))
@@ -93,7 +93,7 @@ def _validate_path(root, schema_path, document_paths, validate_file_extension):
         logging.info(f"✅\t{total_count} of {total_count} documents in '{root}' are valid!")
 
 
-def _process(schema_path, document_path, validate_file_extension):
+def _process(schema_path, document_path, validate_file_extension, filter_extensions):
     logging.info(f"😘\tValidating '{document_path}' against schema '{schema_path}'...")
 
     root = Path(document_path).relative_to('./')
@@ -104,7 +104,7 @@ def _process(schema_path, document_path, validate_file_extension):
             document_path = document_path + '/'
         paths = Path('.').glob(document_path + '**/*')
 
-    _validate_path(root, schema_path, paths, validate_file_extension)
+    _validate_path(root, schema_path, paths, validate_file_extension, filter_extensions)
 
 
 def main():
@@ -116,13 +116,19 @@ def main():
                                               "provided.")
     parser.add_argument("validate_file_extension",
                         default="false",
-                        help="Validate that all the given documents have a valid YAML file extension")
+                        nargs='?',
+                        help="Validate that all the given documents have a file extension as specified by filter_extensions. Default: false")
+    parser.add_argument("filter_extensions",
+                        default=".yml,.yaml",
+                        nargs='?',
+                        help="Only the files with these extensions will be checked. Default: .yml,.yaml")
     args = parser.parse_args()
     schema_path = args.schema_path
     document_path = args.document_path
     validate_file_extension = bool(strtobool(args.validate_file_extension.lower()))
+    filter_extensions = args.filter_extensions.split(',')
 
-    _process(schema_path, document_path, validate_file_extension)
+    _process(schema_path, document_path, validate_file_extension, filter_extensions)
 
 
 if __name__ == "__main__":
