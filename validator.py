@@ -145,7 +145,7 @@ def main():
     filter_extensions = args.filter_extensions.split(',')
 
     matching_files = _filter_paths(include_document_paths.split(','), exclude_document_paths.split(','))
-    _validate_path(schema_path, matching_files, validate_file_extension, filter_extensions)
+    _validate_path(os.path.abspath(os.path.expanduser(schema_path)), matching_files, validate_file_extension, filter_extensions)
 
 
 if __name__ == "__main__":
