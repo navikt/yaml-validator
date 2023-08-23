@@ -8,11 +8,11 @@ usage: validator.py [-h] schema_path document_path [validate_file_extension] [fi
 YAML validator
 
 positional arguments:
-  schema_path           Path to the YAML schema to validate against
-  document_path         Path to the YAML document or directory of documents to be validated. Accepts globs. Defaults to recursive search if only a directory is provided.
-  validate_file_extension
-                        Validate that all the given documents have a file extension as specified by filter_extensions. Default: false
-  filter_extensions     Only the files with these extensions will be checked. Default: .yml,.yaml
+  schema_path              Path to the YAML schema to validate against
+  include_document_paths   A comma separated list of paths to the YAML document or directory of documents to be validated. Accepts globs. 
+  exclude_document_paths   A comma separated exclude list of paths to the YAML document or directory of documents to be validated. Accepts globs. 
+  validate_file_extension  Validate that all the given documents have a file extension as specified by filter_extensions. Default: false
+  filter_extensions        Only the files with these extensions will be checked. Default: .yml,.yaml
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -51,7 +51,7 @@ Users:
 ### Required parameters
 
 - `schema_path` - Path to the YAML schema to validate against
-- `document_path` - Path to the YAML document or directory of documents to be validated. Accepts globs.
+- `include_document_paths` - A comma separated list of paths to the YAML document or directory of documents to be validated. Accepts globs.
 
 ### Optional parameters
 
@@ -69,7 +69,8 @@ jobs:
     - uses: navikt/yaml-validator@v4
       with:
         schema_path: schema.yaml
-        document_path: document.yaml
+        include_document_paths: document.yaml,dir/*
+        exclude_document_paths: dir/not_these_files*
         validate_file_extension: 'no' # optional, defaults shown, enum of ['yes', 'no']
         filter_extensions: '.yml,.yaml' # optional, defaults shown
 ```

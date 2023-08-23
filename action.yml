@@ -6,9 +6,12 @@ inputs:
   schema_path:
     description: 'Path to the YAML schema to validate against'
     required: true
-  document_path:
-    description: 'Path to the YAML document to be validated'
+  include_document_paths:
+    description: 'A comma separated list of paths to the YAML document or directory of documents to be validated. Accepts globs.'
     required: true
+  exclude_document_paths:
+    description: 'A comma separated exclude list of paths to the YAML document or directory of documents to be validated. Accepts globs. Default: "" '
+    required: false
   validate_file_extension:
     description: 'Validate that all the given documents have a file extension as specified by filter_extensions. Default: false'
     required: false
@@ -23,7 +26,8 @@ runs:
   image: 'docker://navikt/yaml-validator:v4'
   args:
     - ${{ inputs.schema_path }}
-    - ${{ inputs.document_path }}
+    - ${{ inputs.include_document_paths }}
+    - ${{ inputs.exclude_document_paths }}
     - ${{ inputs.validate_file_extension }}
     - ${{ inputs.filter_extensions }}
 
