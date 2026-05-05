@@ -6,8 +6,7 @@ on:
       - master
 
 env:
-  image: docker.pkg.github.com/${{ github.repository }}/yaml-validator
-  dockerhub_image: navikt/yaml-validator
+  image: ghcr.io/navikt/yaml-validator
 
 jobs:
   build:
@@ -22,24 +21,15 @@ jobs:
       - name: Build Docker image
         run: |
           docker build --tag ${image}:${GITHUB_SHA} --tag ${image}:latest --tag ${image}:${version} .
-      - name: Push Docker image to GitHub
+      - name: Push Docker image to GHCR
         if: github.ref == 'refs/heads/master'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          docker login docker.pkg.github.com -u ${GITHUB_REPOSITORY} -p ${GITHUB_TOKEN}
+          echo ${GITHUB_TOKEN} | docker login ghcr.io -u ${GITHUB_ACTOR} --password-stdin
           docker push ${image}:${GITHUB_SHA}
           docker push ${image}:${version}
           docker push ${image}:latest
-      - name: Push Docker image to Dockerhub
-        if: github.ref == 'refs/heads/master'
-        env:
-          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-          DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
-        run: |
-          docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}
-          docker tag ${image}:latest ${dockerhub_image}:${version}
-          docker push ${dockerhub_image}:${version}
 
   release:
     name: Release versioned GitHub Action

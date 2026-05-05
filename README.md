@@ -73,3 +73,27 @@ jobs:
         validate_file_extension: 'no' # optional, defaults shown, enum of ['yes', 'no']
         filter_extensions: '.yml,.yaml' # optional, defaults shown
 ```
+
+### Alternative: Direct Docker usage
+
+You can also run the validator directly using Docker:
+
+```yaml
+name: Validate YAML
+on: [push]
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: YAML validation
+      run: |
+        docker run --rm \
+          -v "$GITHUB_WORKSPACE:/workspace" \
+          -w /workspace \
+          ghcr.io/navikt/yaml-validator:v4 \
+          "schema.yaml" \
+          "document.yaml" \
+          "no" \
+          ".yml,.yaml"
+```
