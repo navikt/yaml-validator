@@ -65,7 +65,7 @@ jobs:
   validate:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     - uses: navikt/yaml-validator@v4
       with:
         schema_path: schema.yaml
