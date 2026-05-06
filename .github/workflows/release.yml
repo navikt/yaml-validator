@@ -7,13 +7,17 @@ on:
 
 env:
   image: ghcr.io/navikt/yaml-validator
+  legacy_image: ghcr.io/navikt/yaml-validator/yaml-validator
 
 jobs:
   build:
     name: Build Docker container
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v6
       - name: Generate version tags
         run: |
           version=$(cat version)
@@ -26,42 +30,31 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          echo ${GITHUB_TOKEN} | docker login ghcr.io -u ${GITHUB_ACTOR} --password-stdin
+          echo "${GITHUB_TOKEN}" | docker login ghcr.io -u ${GITHUB_ACTOR} --password-stdin
           docker push ${image}:${GITHUB_SHA}
           docker push ${image}:${version}
           docker push ${image}:latest
+          docker tag ${image}:${version} ${legacy_image}:${version}
+          docker tag ${image}:latest ${legacy_image}:latest
+          docker push ${legacy_image}:${version}
+          docker push ${legacy_image}:latest
 
   release:
     name: Release versioned GitHub Action
     if: github.ref == 'refs/heads/master'
     needs: build
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v6
     - name: Force create tag
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        git remote set-url origin "https://${GITHUB_ACTOR}:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
         git tag -f $(cat version)
         git push -f --tags
-    - name: Delete release if exists
+    - name: Recreate release
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        latest=$(curl https://api.github.com/repos/${GITHUB_REPOSITORY}/releases/latest)
-        tag=$(echo $latest | jq .tag_name | xargs) # xargs strips quotes
-        if grep -q "$tag" version; then
-          release_id=$(echo $latest | jq .id)
-          curl -X DELETE https://${GITHUB_ACTOR}:${GITHUB_TOKEN}@api.github.com/repos/${GITHUB_REPOSITORY}/releases/${release_id}
-        fi
-    - name: Create Release
-      id: create_release
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: |
-        release=$(curl -X POST \
-          -d '{"tag_name": "'"$(cat version)"'"}' \
-          -H "Content-Type: application/json" \
-          https://${GITHUB_ACTOR}:${GITHUB_TOKEN}@api.github.com/repos/${GITHUB_REPOSITORY}/releases)
-        echo ::set-output name=release_id::$(echo $release | jq .id)
+        gh release delete $(cat version) --yes || true
+        gh release create $(cat version) --target master
